@@ -6,6 +6,7 @@ import { ConfigurationEntity } from "@configurations/entities/configuration.enti
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { PostEntity } from "@post/entities/post.entity";
 import { UserEntity } from "@user/entities/user.entity";
+import { CommunityTypeEntity } from "../post/entities/communityType.entity";
 
 dotenv.config();
 
@@ -54,7 +55,14 @@ export default class Config {
             password: env.DB_PASSWORD || "",
             database: env.DB_NAME,
             schema: env.DB_SCHEMA || "public",
-            entities: [UserEntity, AuthTokenEntity, ConfigurationEntity, PostEntity, CommentEntity],
+            entities: [
+                UserEntity,
+                AuthTokenEntity,
+                ConfigurationEntity,
+                PostEntity,
+                CommentEntity,
+                CommunityTypeEntity,
+            ],
             synchronize: false,
             logging: true,
         };

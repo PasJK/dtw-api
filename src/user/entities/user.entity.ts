@@ -1,12 +1,5 @@
 import { Exclude } from "class-transformer";
-import {
-    BeforeInsert,
-    BeforeUpdate,
-    Column,
-    Entity,
-    OneToMany,
-    PrimaryGeneratedColumn,
-} from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { AuthTokenEntity } from "@auth/entities/authToken.entity";
 import { CommentEntity } from "@comment/entities/comment.entity";
 import { Optional } from "@nestjs/common";
@@ -63,9 +56,6 @@ export class UserEntity {
 
     @OneToMany(() => AuthTokenEntity, (authToken) => authToken.user)
     authTokens: AuthTokenEntity[];
-
-    @OneToMany(() => PostEntity, (post) => post.user)
-    posts: PostEntity[];
 
     @OneToMany(() => CommentEntity, (comment) => comment.user)
     comments: CommentEntity[];
