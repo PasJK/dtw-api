@@ -1,8 +1,6 @@
-import { ValidatedEmail } from "@utils/decorator";
+import { ValidatedUsername } from "@utils/decorator";
 
 export class LoginDto {
-    @ValidatedEmail()
-    email: string;
-
-    password: string;
+    @ValidatedUsername()
+    username: string;
 }
