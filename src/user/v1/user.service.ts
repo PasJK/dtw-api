@@ -11,6 +11,15 @@ export class UserServiceV1 {
         private userRepository: Repository<UserEntity>,
     ) {}
 
+    async signup(username: string): Promise<UserEntity> {
+        const user = new UserEntity();
+        user.username = username;
+        user.status = "active";
+        user.isActive = true;
+
+        return this.userRepository.save(user);
+    }
+
     async findOneByUsername(username: string): Promise<UserEntity> {
         const query = this.userRepository
             .createQueryBuilder("user")
