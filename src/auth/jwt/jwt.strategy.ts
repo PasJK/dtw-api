@@ -8,8 +8,12 @@ import { UserEntity } from "@user/entities/user.entity";
 import { UserServiceV1 } from "@user/v1/user.service";
 import { extractToken } from "@utils/cookies";
 import { TokenType } from "@utils/enum/token.enum";
+import { ErrorObject } from "@utils/http-services/errorObject";
+import { SERVICE_STATUS } from "@utils/http-services/interfaces/serviceStatus.interface";
 import { AccessTokenPayload, DecodedToken } from "@utils/interface/jwtToken";
 import { RequestWithAuth } from "@utils/interface/requestWithAuth.interface";
+
+type UserWithAccessToken = UserEntity & { accessToken: string };
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -31,15 +35,25 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         return extractToken(req);
     }
 
-    async validate() {}
+    async validate(payload: AccessTokenPayload) {
+        const { username } = payload;
+
+        const userObj = (await this.userService.findOneByUsername(username)) as UserWithAccessToken;
+        const currentUserToken = userObj?.authTokens.shift()?.accessToken;
+        const isUnauthorized = !userObj || !currentUserToken;
+
+        if (isUnauthorized) {
+            throw new ErrorObject({ ...SERVICE_STATUS.UNAUTHORIZED });
+        }
+
+        return { ...payload, accessToken: currentUserToken };
+    }
 
     async generateAccessToken(user: UserEntity, configs: ConfigurationEntity): Promise<string> {
         const nowDate = new Date();
         const payload: AccessTokenPayload = {
             id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
+            username: user.username,
             lastLogin: nowDate,
             inActivityLimit: configs.clientInactivityTime || 30 * 60 * 1000,
             tokenType: TokenType.ACCESS,
