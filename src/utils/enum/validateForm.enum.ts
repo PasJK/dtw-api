@@ -9,7 +9,7 @@ export enum ValidateForm {
     MUST_BE_BOOLEAN = "Must be boolean",
     MUST_BE_PHONE_NUMBER = "Must be a phone number",
     NAME_MUST_NOT_EXCEED_THAN_50_CHAR = "Must not exceed more than 50 characters",
-    NAME_MUST_HAVE_AT_LEAST_1_CHAR = "Must have at least 1 character",
+    NAME_MUST_HAVE_AT_LEAST_4_CHAR = "Must have at least 4 character",
     PASSWORD_NOT_EXCEED_MORE_THAN_60_CHAR = "Must not exceed more than 60 characters",
     PASSWORD_MUST_HAVE_AT_LEAST_8_CHAR = "Must have at least 8 characters",
     PASSWORD_MUST_HAVE_AT_LEAST_1_LOWER_CASE = "Must have at least 1 lower case letter",
