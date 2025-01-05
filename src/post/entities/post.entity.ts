@@ -37,8 +37,4 @@ export class PostEntity {
     @OneToMany(() => CommentEntity, (comment) => comment.post)
     @JoinColumn({ name: "post_id", foreignKeyConstraintName: "FK_POST_POST_ID" })
     comments: CommentEntity[];
-
-    @ManyToOne(() => UserEntity, (user) => user.posts)
-    @JoinColumn({ name: "user_id", foreignKeyConstraintName: "FK_POST_USER_ID" })
-    user: UserEntity;
 }

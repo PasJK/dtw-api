@@ -3,6 +3,7 @@ import Config from "@configs/config";
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { PostModuleV1 } from "@post/v1/post.module";
 import { UserModuleV1 } from "@user/v1/user.module";
 
 @Module({
@@ -13,6 +14,7 @@ import { UserModuleV1 } from "@user/v1/user.module";
         }),
         AuthModule,
         UserModuleV1,
+        PostModuleV1,
         TypeOrmModule.forRoot(Config.getORMConfig()),
     ],
 })
