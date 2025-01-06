@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
+import { Public } from "@utils/decorator";
 import { HttpResponse } from "@utils/http-services/httpResponse";
 import { SERVICE_STATUS } from "@utils/http-services/interfaces/serviceStatus.interface";
 import { RequestWithAuth } from "@utils/interface/requestWithAuth.interface";
+import { CreateCommentDto } from "./dto/createComment.dto";
 import { FindAllPostDto } from "./dto/findAllPost.dto";
 import { StorePostDto } from "./dto/storePost.dto";
 import { PostServiceV1 } from "./post.service";
@@ -10,6 +12,7 @@ import { PostServiceV1 } from "./post.service";
 export class PostController {
     constructor(private readonly postService: PostServiceV1) {}
 
+    @Public()
     @Get()
     async getAllPosts(@Req() req: RequestWithAuth, @Query() query: FindAllPostDto): Promise<HttpResponse> {
         const requester = req?.user;
@@ -72,5 +75,13 @@ export class PostController {
             serviceStatus: SERVICE_STATUS.SUCCESS,
             data: communityTypeList,
         });
+    }
+
+    @Post(":postId/comment")
+    async createComment(@Req() req: RequestWithAuth, @Param("postId") postId: string, @Body() body: CreateCommentDto) {
+        const requester = req?.user;
+        await this.postService.createComment(requester, postId, body);
+
+        return HttpResponse.res({ serviceStatus: SERVICE_STATUS.SUCCESS });
     }
 }

@@ -1,4 +1,5 @@
 import { DeepPartial, FindOneOptions, Repository } from "typeorm";
+import { CommentServiceV1 } from "@comment/v1/comment.service";
 import Config from "@configs/config";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -6,10 +7,15 @@ import { CommunityTypeEntity } from "@post/entities/communityType.entity";
 import { PostEntity } from "@post/entities/post.entity";
 import { ErrorObject } from "@utils/http-services/errorObject";
 import { SERVICE_STATUS } from "@utils/http-services/interfaces/serviceStatus.interface";
+import { ResultWithPagination } from "@utils/interface";
 import { RequestUser } from "@utils/interface/requestWithAuth.interface";
-import { getPagination } from "@utils/pagination";
+import { getPagination, getPaginationOffset } from "@utils/pagination";
+import { CreateCommentDto } from "./dto/createComment.dto";
 import { FindAllPostDto } from "./dto/findAllPost.dto";
 import { StorePostDto } from "./dto/storePost.dto";
+import { PostHelperServiceV1 } from "./postHelper.service";
+
+type PostWithTotalComments = PostEntity & { totalComments: number };
 
 @Injectable()
 export class PostServiceV1 {
@@ -19,21 +25,38 @@ export class PostServiceV1 {
 
         @InjectRepository(CommunityTypeEntity, Config.getInstantConfig().DB_CONNECTION_NAME)
         private communityTypeRepository: Repository<CommunityTypeEntity>,
+
+        private commentService: CommentServiceV1,
+        private postHelperService: PostHelperServiceV1,
     ) {}
 
-    async getAllPosts(requester: RequestUser, query: FindAllPostDto) {
-        const { perPage = 10, page = 1, search, order = "DESC", orderBy = "createdAt", communityType, ourPost } = query;
+    async getAllPosts(
+        requester: RequestUser,
+        query: FindAllPostDto,
+    ): Promise<ResultWithPagination<PostWithTotalComments>> {
+        const {
+            perPage = 10,
+            page = 1,
+            search,
+            order = "DESC",
+            orderBy = "lastActivityAt",
+            community,
+            ourPost,
+        } = query;
         const perPageNumber = Number(perPage);
         const pageNumber = Number(page);
+        const perPageOffset = await getPaginationOffset(pageNumber, perPageNumber);
 
-        const queryBuilder = this.postRepository.createQueryBuilder("post");
+        const queryBuilder = this.postRepository
+            .createQueryBuilder("post")
+            .where("post.delete.isDeleted = :isDeleted", { isDeleted: false });
 
         if (search) {
-            queryBuilder.where("post.title LIKE :search", { search: `%${search}%` });
+            queryBuilder.andWhere("post.title ILIKE :search", { search: `%${search.toLowerCase()}%` });
         }
 
-        if (communityType) {
-            queryBuilder.where("post.communityType = :communityType", { communityType });
+        if (community) {
+            queryBuilder.andWhere("post.communityType = :community", { community });
         }
 
         if (orderBy) {
@@ -41,25 +64,29 @@ export class PostServiceV1 {
         }
 
         if (ourPost) {
-            queryBuilder.where("post.create.createdBy = :requesterId", { requesterId: requester.id });
+            queryBuilder.andWhere("post.create.createdBy = :requesterId", { requesterId: requester.id });
         }
 
-        const [posts, total] = await queryBuilder
+        const posts = await queryBuilder
             .select([
-                "post.id",
-                "post.title",
-                "post.contents",
-                "post.communityType",
-                "post.lastActivityAt",
-                'post.createdBy as "creatorId"',
-                'post.createdAt as "createdAt"',
-                'post.updatedBy as "updaterId"',
-                'post.updatedAt as "updatedAt"',
+                'post.id AS "id"',
+                'post.title AS "title"',
+                'post.contents AS "contents"',
+                'post.communityType AS "community"',
+                'users.username AS "author"',
             ])
-            .where("post.isDeleted = :isDeleted", { isDeleted: false })
-            .skip((pageNumber - 1) * perPageNumber)
-            .take(perPageNumber)
-            .getManyAndCount();
+
+            .leftJoin("users", "users", "users.id = post.createdBy")
+            .offset(perPageOffset)
+            .limit(perPageNumber)
+            .getRawMany<PostWithTotalComments>();
+
+        for (const post of posts) {
+            const commentList = await this.commentService.findAllCommentByPostId(post.id);
+            post.totalComments = commentList.length;
+        }
+
+        const total = await this.getCountPosts(requester, query);
 
         return {
             data: posts,
@@ -67,10 +94,34 @@ export class PostServiceV1 {
         };
     }
 
+    async getCountPosts(requester: RequestUser, query: FindAllPostDto) {
+        const { search, community, ourPost } = query;
+
+        const queryBuilder = this.postRepository.createQueryBuilder("post");
+
+        if (search) {
+            queryBuilder.where("post.title LIKE :search", { search: `%${search}%` });
+        }
+
+        if (community) {
+            queryBuilder.where("post.communityType = :community", { community });
+        }
+
+        if (ourPost) {
+            queryBuilder.where("post.create.createdBy = :requesterId", { requesterId: requester.id });
+        }
+
+        return queryBuilder.where("post.delete.isDeleted = :isDeleted", { isDeleted: false }).getCount();
+    }
+
     async findPostTitle(id: string, title: string, type: string): Promise<PostEntity | null> {
-        return this.postRepository.findOne({
-            where: { create: { createdBy: id }, title, communityType: type, delete: { isDeleted: null } },
-        });
+        return this.postRepository
+            .createQueryBuilder("post")
+            .where("post.createdBy = :createdBy", { createdBy: id })
+            .andWhere("post.title ILIKE :title", { title: `%${title}%` })
+            .andWhere("post.communityType = :type", { type })
+            .andWhere("post.delete.isDeleted = :isDeleted", { isDeleted: false })
+            .getOne();
     }
 
     async findOnePost(options: FindOneOptions): Promise<PostEntity | null> {
@@ -120,10 +171,8 @@ export class PostServiceV1 {
             communityType,
             contents,
             lastActivityAt: now,
-            create: {
-                createdBy: creatorId,
-                createdAt: now,
-            },
+            createdAt: now,
+            createdBy: creatorId,
             update: {
                 updatedBy: creatorId,
                 updatedAt: now,
@@ -141,14 +190,7 @@ export class PostServiceV1 {
         const updaterId = requester.id;
         const now = new Date();
 
-        const post = await this.findOnePost({ where: { id } });
-
-        if (!post) {
-            throw new ErrorObject({
-                ...SERVICE_STATUS.SERVICE_BAD_REQUEST,
-                message: "Post not found",
-            });
-        }
+        await this.postHelperService.verifyPost(id);
 
         const dataUpdate: DeepPartial<PostEntity> = {
             title,
@@ -165,15 +207,13 @@ export class PostServiceV1 {
         return this.postRepository.save(instance);
     }
 
-    async softDeletePost(requester: RequestUser, id: string): Promise<void> {
-        const post = await this.findOnePost({ where: { id } });
+    async updateLastActivityAt(id: string, lastActivityAt: Date) {
+        const instance = await this.postRepository.preload({ id, lastActivityAt });
+        return this.postRepository.save(instance);
+    }
 
-        if (!post) {
-            throw new ErrorObject({
-                ...SERVICE_STATUS.SERVICE_BAD_REQUEST,
-                message: "Post not found",
-            });
-        }
+    async softDeletePost(requester: RequestUser, id: string): Promise<void> {
+        await this.postHelperService.verifyPost(id);
 
         const softDeleteData = {
             status: "deleted",
@@ -192,5 +232,14 @@ export class PostServiceV1 {
         return this.communityTypeRepository.find({
             select: ["name", "key"],
         });
+    }
+
+    async createComment(requester: RequestUser, postId: string, body: CreateCommentDto): Promise<void> {
+        const { message } = body;
+        const creatorId = requester.id;
+
+        await this.postHelperService.verifyPost(postId);
+        await this.commentService.create(creatorId, postId, message);
+        await this.updateLastActivityAt(postId, new Date());
     }
 }
