@@ -12,4 +12,7 @@ export class CommunityTypeEntity {
 
     @Column({ type: "varchar", length: 250 })
     key: string;
+
+    @Column({ type: "int", default: 0 })
+    priority: number;
 }

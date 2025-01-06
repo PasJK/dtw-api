@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseFilters } from "@nestjs/common";
 import { Public } from "@utils/decorator";
+import { HttpExceptionFilter } from "@utils/http-services/httpException";
 import { HttpResponse } from "@utils/http-services/httpResponse";
 import { SERVICE_STATUS } from "@utils/http-services/interfaces/serviceStatus.interface";
 import { RequestWithAuth } from "@utils/interface/requestWithAuth.interface";
@@ -10,6 +11,7 @@ import { StorePostDto } from "./dto/storePost.dto";
 import { PostServiceV1 } from "./post.service";
 
 @Controller("posts")
+@UseFilters(new HttpExceptionFilter())
 export class PostController {
     constructor(private readonly postService: PostServiceV1) {}
 
@@ -81,6 +83,7 @@ export class PostController {
         });
     }
 
+    @Public()
     @Get("communities/dropdown")
     async getCommunityDropdown() {
         const communityTypeList = await this.postService.getCommunityDropdown();

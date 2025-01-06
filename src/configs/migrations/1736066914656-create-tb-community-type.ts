@@ -11,7 +11,7 @@ export class CreateTbCommunityType1736066914656 implements MigrationInterface {
         await queryRunner.query(`
             INSERT INTO "community_types" ("name", "key") 
             VALUES 
-                ('Community', 'community'),
+                ('Community', 'all'),
                 ('Group', 'group'),
                 ('History', 'history'),
                 ('Food', 'food'),
