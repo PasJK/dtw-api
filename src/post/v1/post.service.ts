@@ -162,11 +162,11 @@ export class PostServiceV1 {
     }
 
     async createPost(requester: RequestUser, body: StorePostDto) {
-        const { communityType, title, contents } = body;
+        const { community, title, contents } = body;
         const creatorId = requester.id;
         const now = new Date();
 
-        const titleExist = await this.findPostTitle(creatorId, title, communityType);
+        const titleExist = await this.findPostTitle(creatorId, title, community);
 
         if (titleExist) {
             throw new ErrorObject({
@@ -177,7 +177,7 @@ export class PostServiceV1 {
 
         const dataCreate: DeepPartial<PostEntity> = {
             title,
-            communityType,
+            communityType: community,
             contents,
             lastActivityAt: now,
             createdAt: now,
@@ -195,7 +195,7 @@ export class PostServiceV1 {
     }
 
     async updatePost(requester: RequestUser, id: string, body: StorePostDto) {
-        const { title, contents, communityType } = body;
+        const { title, contents, community } = body;
         const updaterId = requester.id;
         const now = new Date();
 
@@ -204,7 +204,7 @@ export class PostServiceV1 {
         const dataUpdate: DeepPartial<PostEntity> = {
             title,
             contents,
-            communityType,
+            communityType: community,
             lastActivityAt: now,
             update: {
                 updatedBy: updaterId,
@@ -241,7 +241,7 @@ export class PostServiceV1 {
         return this.communityTypeRepository.find({
             select: ["name", "key"],
             order: {
-                name: "ASC",
+                priority: "ASC",
             },
         });
     }
