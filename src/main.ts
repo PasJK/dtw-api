@@ -1,5 +1,3 @@
-import { readFileSync } from "fs";
-import { join } from "path";
 import * as cookieParser from "cookie-parser";
 import { GlobalAuthGuard } from "@auth/auth.guard";
 import Config from "@configs/config";

@@ -15,8 +15,8 @@ export class FindAllPostDto {
     search?: string;
 
     @IsOptional()
-    @IsString({ message: `communityType|1|${ValidateForm.SHOULD_BE_STRING}` })
-    communityType?: string;
+    @IsString({ message: `community|1|${ValidateForm.SHOULD_BE_STRING}` })
+    community?: string;
 
     @IsOptional()
     @IsBoolean({ message: `ourPost|1|${ValidateForm.MUST_BE_BOOLEAN}` })
