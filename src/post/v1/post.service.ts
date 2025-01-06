@@ -11,6 +11,7 @@ import { ResultWithPagination } from "@utils/interface";
 import { RequestUser } from "@utils/interface/requestWithAuth.interface";
 import { getPagination, getPaginationOffset } from "@utils/pagination";
 import { CreateCommentDto } from "./dto/createComment.dto";
+import { FindAllCommentDto } from "./dto/findAllComment.dto";
 import { FindAllPostDto } from "./dto/findAllPost.dto";
 import { StorePostDto } from "./dto/storePost.dto";
 import { PostHelperServiceV1 } from "./postHelper.service";
@@ -83,7 +84,7 @@ export class PostServiceV1 {
 
         for (const post of posts) {
             const commentList = await this.commentService.findAllCommentByPostId(post.id);
-            post.totalComments = commentList.length;
+            post.totalComments = commentList.data.length;
         }
 
         const total = await this.getCountPosts(requester, query);
@@ -137,19 +138,27 @@ export class PostServiceV1 {
             });
         }
 
-        return queryBuilder
+        const post = await queryBuilder
             .select([
                 'post.id AS "id"',
                 'post.title AS "title"',
                 'post.contents AS "contents"',
-                'post.communityType AS "communityType"',
-                'post.lastActivityAt AS "lastActivityAt"',
-                'post.createdBy AS "createdBy"',
+                'post.communityType AS "community"',
                 'post.createdAt AS "createdAt"',
-                'post.updatedBy AS "updatedBy"',
-                'post.updatedAt AS "updatedAt"',
+                'post.lastActivityAt AS "lastActivityAt"',
+                'users.username AS "author"',
             ])
-            .getRawOne();
+            .leftJoin("users", "users", "users.id = post.createdBy")
+            .getRawOne<PostWithTotalComments>();
+
+        const commentList = await this.commentService.findAllCommentByPostId(post.id);
+        post.totalComments = commentList.data.length;
+
+        return post;
+    }
+
+    async findAllCommentByPostId(id: string, query?: FindAllCommentDto) {
+        return this.commentService.findAllCommentByPostId(id, query);
     }
 
     async createPost(requester: RequestUser, body: StorePostDto) {
@@ -231,6 +240,9 @@ export class PostServiceV1 {
     async getCommunityDropdown() {
         return this.communityTypeRepository.find({
             select: ["name", "key"],
+            order: {
+                name: "ASC",
+            },
         });
     }
 

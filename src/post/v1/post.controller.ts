@@ -4,6 +4,7 @@ import { HttpResponse } from "@utils/http-services/httpResponse";
 import { SERVICE_STATUS } from "@utils/http-services/interfaces/serviceStatus.interface";
 import { RequestWithAuth } from "@utils/interface/requestWithAuth.interface";
 import { CreateCommentDto } from "./dto/createComment.dto";
+import { FindAllCommentDto } from "./dto/findAllComment.dto";
 import { FindAllPostDto } from "./dto/findAllPost.dto";
 import { StorePostDto } from "./dto/storePost.dto";
 import { PostServiceV1 } from "./post.service";
@@ -57,13 +58,26 @@ export class PostController {
         });
     }
 
+    @Public()
     @Get(":id")
-    async getPost(@Req() req: RequestWithAuth, @Param("id") id: string) {
+    async getPost(@Param("id") id: string) {
         const post = await this.postService.findOnePost({ where: { id } });
 
         return HttpResponse.res({
             serviceStatus: SERVICE_STATUS.SUCCESS,
             data: post,
+        });
+    }
+
+    @Public()
+    @Get(":id/comments")
+    async getPostComments(@Query() query: FindAllCommentDto, @Param("id") id: string) {
+        const { data, meta } = await this.postService.findAllCommentByPostId(id, query);
+
+        return HttpResponse.res({
+            serviceStatus: SERVICE_STATUS.SUCCESS,
+            data,
+            meta,
         });
     }
 
