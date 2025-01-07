@@ -2,7 +2,7 @@ import { Exclude } from "class-transformer";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CommentEntity } from "@comment/entities/comment.entity";
 import { UserEntity } from "@user/entities/user.entity";
-import { CreateEntity, DeleteEntity, UpdateEntity } from "@utils/entity";
+import { DeleteEntity, UpdateEntity } from "@utils/entity";
 
 @Entity({ name: "posts" })
 export class PostEntity {
@@ -25,8 +25,15 @@ export class PostEntity {
     @Column({ type: "timestamp", name: "last_activity_at" })
     lastActivityAt: Date;
 
-    @Column(() => CreateEntity, { prefix: false })
-    create: CreateEntity;
+    @Column({
+        type: "timestamp",
+        name: "created_at",
+        default: () => "CURRENT_TIMESTAMP",
+    })
+    createdAt: Date;
+
+    @Column({ type: "uuid", name: "created_by" })
+    createdBy: string;
 
     @Column(() => UpdateEntity, { prefix: false })
     update: UpdateEntity;
@@ -35,10 +42,9 @@ export class PostEntity {
     delete: DeleteEntity;
 
     @OneToMany(() => CommentEntity, (comment) => comment.post)
-    @JoinColumn({ name: "post_id", foreignKeyConstraintName: "FK_POST_POST_ID" })
     comments: CommentEntity[];
 
     @ManyToOne(() => UserEntity, (user) => user.posts)
-    @JoinColumn({ name: "user_id", foreignKeyConstraintName: "FK_POST_USER_ID" })
+    @JoinColumn({ name: "created_by", foreignKeyConstraintName: "FK_POST_CREATED_BY" })
     user: UserEntity;
 }

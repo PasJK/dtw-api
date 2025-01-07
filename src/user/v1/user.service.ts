@@ -4,10 +4,6 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserEntity } from "@user/entities/user.entity";
 
-interface FindUserOptions {
-    withPassword: boolean;
-}
-
 @Injectable()
 export class UserServiceV1 {
     constructor(
@@ -15,28 +11,28 @@ export class UserServiceV1 {
         private userRepository: Repository<UserEntity>,
     ) {}
 
-    async findOneByEmail(email: string, options?: FindUserOptions): Promise<UserEntity> {
+    async signup(username: string): Promise<UserEntity> {
+        const user = new UserEntity();
+        user.username = username;
+        user.status = "active";
+        user.isActive = true;
+
+        return this.userRepository.save(user);
+    }
+
+    async findOneByUsername(username: string): Promise<UserEntity> {
         const query = this.userRepository
             .createQueryBuilder("user")
             .select("user.id")
-            .addSelect("user.email")
-            .addSelect("user.password")
-            .addSelect("user.firstNameTH")
-            .addSelect("user.lastNameTH")
-            .addSelect("user.fullNameTH")
-            .addSelect("user.firstNameEN")
-            .addSelect("user.lastNameEN")
-            .addSelect("user.fullNameEN")
-            .addSelect("user.phone")
+            .addSelect("user.username")
             .addSelect("user.lastLogin")
             .addSelect("user.status")
-            .where("LOWER(user.email) = :email", { email: email.toLowerCase() })
+            .addSelect("user.isActive")
+            .addSelect("user.isDeleted")
+            .where("LOWER(user.username) = :username", { username: username.toLowerCase() })
             .andWhere("user.is_active = true")
-            .andWhere("user.is_deleted = false");
-
-        if (options.withPassword) {
-            query.addSelect("user.password");
-        }
+            .andWhere("user.is_deleted = false")
+            .leftJoinAndSelect("user.authTokens", "authTokens");
 
         return query.getOne();
     }

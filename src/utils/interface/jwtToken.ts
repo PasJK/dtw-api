@@ -4,9 +4,7 @@ import { TokenType } from "@utils/enum/token.enum";
 
 export interface AccessTokenPayload {
     id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
+    username: string
     lastLogin: Date;
     inActivityLimit: number;
     tokenType: TokenType.ACCESS;

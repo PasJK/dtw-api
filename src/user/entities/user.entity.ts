@@ -1,14 +1,6 @@
 import { Exclude } from "class-transformer";
-import {
-    BeforeInsert,
-    BeforeUpdate,
-    Column,
-    Entity,
-    OneToMany,
-    PrimaryGeneratedColumn,
-} from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { AuthTokenEntity } from "@auth/entities/authToken.entity";
-import { CommentEntity } from "@comment/entities/comment.entity";
 import { Optional } from "@nestjs/common";
 import { PostEntity } from "@post/entities/post.entity";
 import { CreateEntity, DeleteEntity, UpdateEntity } from "@utils/entity";
@@ -19,8 +11,8 @@ export class UserEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column({ type: "varchar", length: 120, nullable: false })
-    email: string;
+    @Column({ type: "varchar", length: 150, nullable: false })
+    username: string;
 
     @Exclude()
     @Column({ type: "varchar", length: 255, select: false, nullable: true, default: null })
@@ -66,7 +58,4 @@ export class UserEntity {
 
     @OneToMany(() => PostEntity, (post) => post.user)
     posts: PostEntity[];
-
-    @OneToMany(() => CommentEntity, (comment) => comment.user)
-    comments: CommentEntity[];
 }
