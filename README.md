@@ -84,3 +84,11 @@ folder coverage ที่ชั้นนอกสุดของ project จะ�
 - `src/utils` เป็นที่เก็บสำหรับ Common Function ที่จะใช้หลายๆที่โดยจะแยกเป็นเรื่องต่างๆ เช่น interface, type, function ต่างๆ
 - `src/config` เป็นที่เก็บ Config สำหรับเชื่อมต่อกับ Database และเป็นที่เก็บ file migrations　ทั้งหมด
 
+## Package ที่เพิ่มเติมนอกเหนือจาก NestJS
+- `class-transformer` สำหรับทำ transform ในส่วนของ DTO
+- `class-validator` สำหรับทำ validation ในส่วนของ DTO
+- `cookie-parser` สำหรับใช้ในการตรวจสอบ Cookie ของ API
+- `device-detector-js` สำหรับใช้ในการตรวจสอบอุปกรณ์ที่ใช้ในการเข้าถึง API
+- `passport` เป็น Package สำหรับการสร้าง Authentication ของ NestJS
+- `passport-jwt` เป็น Package สำหรับการสร้าง JWT ของ NestJS
+- `pg` เป็น Package สำหรับการเชื่อมต่อกับ Database PostgreSQL
