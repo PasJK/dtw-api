@@ -1,5 +1,5 @@
 import { ExtractJwt, Strategy } from "passport-jwt";
-import Config from "src/configs/config";
+import Config from "@configs/config";
 import { ConfigurationEntity } from "@configurations/entities/configuration.entity";
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";

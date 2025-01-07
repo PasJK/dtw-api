@@ -1,5 +1,5 @@
-import Config from "src/configs/config";
 import { CommentEntity } from "@comment/entities/comment.entity";
+import Config from "@configs/config";
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { CommentServiceV1 } from "./comment.service";
