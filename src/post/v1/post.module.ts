@@ -1,5 +1,5 @@
-import Config from "src/configs/config";
 import { CommentModuleV1 } from "@comment/v1/comment.module";
+import Config from "@configs/config";
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { CommunityTypeEntity } from "@post/entities/communityType.entity";

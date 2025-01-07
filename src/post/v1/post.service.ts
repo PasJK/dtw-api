@@ -134,8 +134,6 @@ export class PostServiceV1 {
 
         if (options.where) {
             Object.entries(options.where).forEach(([key, value]) => {
-                console.log(key, value);
-
                 queryBuilder.andWhere(`post.${key} = :${key}`, { [key]: value });
             });
         }

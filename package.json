@@ -2,7 +2,7 @@
   "name": "data-wow-test",
   "version": "0.0.1",
   "description": "",
-  "author": "Coraline Co., Ltd",
+  "author": "PASJ",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -100,11 +100,14 @@
       "^.+\\.(module|guard|strategy)\\.ts$"
     ],
     "moduleNameMapper": {
-      "^@home/(.*)": "<rootDir>/home/$1",
       "^@auth/(.*)": "<rootDir>/auth/$1",
       "^@configs/(.*)": "<rootDir>/configs/$1",
       "^@utils/(.*)": "<rootDir>/utils/$1",
-      "^@user/(.*)": "<rootDir>/user/$1"
+      "^@comment/(.*)": "<rootDir>/comment/$1",
+      "^@user/(.*)": "<rootDir>/user/$1",
+      "^@post/(.*)": "<rootDir>/post/$1",
+      "^@configurations/(.*)": "<rootDir>/configurations/$1",
+      "^@testUtils/(.*)": "<rootDir>/testUtils/$1"
     }
   }
 }
