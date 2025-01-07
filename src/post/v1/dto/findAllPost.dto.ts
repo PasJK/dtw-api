@@ -1,5 +1,6 @@
-import { IsBoolean, IsEnum, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { ValidateForm } from "@utils/enum";
+import { Transform } from "class-transformer";
 
 export class FindAllPostDto {
     @IsOptional()
@@ -19,7 +20,9 @@ export class FindAllPostDto {
     community?: string;
 
     @IsOptional()
-    @IsBoolean({ message: `ourPost|1|${ValidateForm.MUST_BE_BOOLEAN}` })
+    @Transform(({ value }) => Boolean(value === "true"))
+    @IsNotEmpty({ message: `ourPost|1|${ValidateForm.SHOULD_NOT_EMPTY}` })
+    @IsBoolean({ message: `ourPost|2|${ValidateForm.MUST_BE_BOOLEAN}` })
     ourPost?: boolean;
 
     @IsOptional()

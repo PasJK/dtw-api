@@ -15,11 +15,22 @@ import { PostServiceV1 } from "./post.service";
 export class PostController {
     constructor(private readonly postService: PostServiceV1) {}
 
+    @Get("our-posts")
+    async getAllOurPosts(@Req() req: RequestWithAuth, @Query() query: FindAllPostDto): Promise<HttpResponse> {
+        const requester = req?.user;
+        const { data, meta } = await this.postService.getAllPosts(query, requester);
+
+        return HttpResponse.res({
+            serviceStatus: SERVICE_STATUS.SUCCESS,
+            data,
+            meta,
+        });
+    }
+
     @Public()
     @Get()
-    async getAllPosts(@Req() req: RequestWithAuth, @Query() query: FindAllPostDto): Promise<HttpResponse> {
-        const requester = req?.user;
-        const { data, meta } = await this.postService.getAllPosts(requester, query);
+    async getAllPosts(@Query() query: FindAllPostDto): Promise<HttpResponse> {
+        const { data, meta } = await this.postService.getAllPosts(query);
 
         return HttpResponse.res({
             serviceStatus: SERVICE_STATUS.SUCCESS,
