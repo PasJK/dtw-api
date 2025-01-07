@@ -32,8 +32,8 @@ export class PostServiceV1 {
     ) {}
 
     async getAllPosts(
-        requester: RequestUser,
         query: FindAllPostDto,
+        requester?: RequestUser,
     ): Promise<ResultWithPagination<PostWithTotalComments>> {
         const {
             perPage = 10,
@@ -65,7 +65,7 @@ export class PostServiceV1 {
         }
 
         if (ourPost) {
-            queryBuilder.andWhere("post.create.createdBy = :requesterId", { requesterId: requester.id });
+            queryBuilder.andWhere("post.createdBy = :requesterId", { requesterId: requester.id });
         }
 
         const posts = await queryBuilder
@@ -98,21 +98,23 @@ export class PostServiceV1 {
     async getCountPosts(requester: RequestUser, query: FindAllPostDto) {
         const { search, community, ourPost } = query;
 
-        const queryBuilder = this.postRepository.createQueryBuilder("post");
+        const queryBuilder = this.postRepository
+            .createQueryBuilder("post")
+            .where("post.delete.isDeleted = :isDeleted", { isDeleted: false });
 
         if (search) {
-            queryBuilder.where("post.title LIKE :search", { search: `%${search}%` });
+            queryBuilder.andWhere("post.title LIKE :search", { search: `%${search}%` });
         }
 
         if (community) {
-            queryBuilder.where("post.communityType = :community", { community });
+            queryBuilder.andWhere("post.communityType = :community", { community });
         }
 
         if (ourPost) {
-            queryBuilder.where("post.create.createdBy = :requesterId", { requesterId: requester.id });
+            queryBuilder.andWhere("post.createdBy = :requesterId", { requesterId: requester.id });
         }
 
-        return queryBuilder.where("post.delete.isDeleted = :isDeleted", { isDeleted: false }).getCount();
+        return queryBuilder.getCount();
     }
 
     async findPostTitle(id: string, title: string, type: string): Promise<PostEntity | null> {
