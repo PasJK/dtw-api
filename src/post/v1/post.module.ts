@@ -5,8 +5,8 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { CommunityTypeEntity } from "@post/entities/communityType.entity";
 import { PostEntity } from "@post/entities/post.entity";
 import { PostController } from "./post.controller";
+import { PostHelperServiceV1 } from "./post.helper";
 import { PostServiceV1 } from "./post.service";
-import { PostHelperServiceV1 } from "./postHelper.service";
 
 @Module({
     imports: [

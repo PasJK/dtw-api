@@ -14,7 +14,7 @@ import { CreateCommentDto } from "./dto/createComment.dto";
 import { FindAllCommentDto } from "./dto/findAllComment.dto";
 import { FindAllPostDto } from "./dto/findAllPost.dto";
 import { StorePostDto } from "./dto/storePost.dto";
-import { PostHelperServiceV1 } from "./postHelper.service";
+import { PostHelperServiceV1 } from "./post.helper";
 
 type PostWithTotalComments = PostEntity & { totalComments: number };
 
